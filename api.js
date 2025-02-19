@@ -19,7 +19,7 @@ app.get("/", (req, res) => {
 });
 
 // Rota fechada
-app.get("user/:id", async (req, res) => {
+app.get("/user/:id", checktoken, async (req, res) => {
   const id = req.params.id;
   const user = await User.findById(id, "-password");
 
@@ -31,8 +31,8 @@ app.get("user/:id", async (req, res) => {
 });
 
 function checktoken(req, res, next) {
-  const authHeader = req.headers["autorizado"];
-  const token = authHeader && authHeader.splint(" ")[1];
+  const authHeader = req.headers["authorization"];
+  const token = authHeader && authHeader.split(" ")[1];
 
   if (!token) return res.status(401).json({ msg: "Acesso negado" });
 
@@ -75,10 +75,10 @@ app.post("/auth/register", async (req, res) => {
   const salt = await bcrypt.genSalt(12); // gera um salt para criptografar a senha
   const passwordHash = await bcrypt.hash(password, salt); // Cria um hash da senha usando o salt
 
-  const user = new ser({
+  const user = new User({
     name,
     email,
-    passwordHash,
+    password: passwordHash,
   });
 
   try {
